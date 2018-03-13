@@ -117,10 +117,13 @@ object ExpectedActualDeclarationChecker : DeclarationChecker {
         // So yet we are using own module in compiler context and common module in IDE context.
         val commonOrOwnModules = descriptor.module.expectedByModules.ifEmpty { listOf(descriptor.module) }
         val compatibility = commonOrOwnModules
-            .mapNotNull { ExpectedActualResolver.findExpectedForActual(descriptor, it) }
-            .ifEmpty { return }
-            .fold(LinkedHashMap<Compatibility, List<MemberDescriptor>>()) { resultMap, partialMap ->
-                resultMap.apply { putAll(partialMap) }
+            .asSequence()
+            .fold(LinkedHashMap<Compatibility, List<MemberDescriptor>>()) { resultMap, commonModule ->
+                val currentMap = ExpectedActualResolver.findExpectedForActual(descriptor, commonModule)
+                if (currentMap != null) {
+                    resultMap.putAll(currentMap)
+                }
+                resultMap
             }
 
         val hasActualModifier = descriptor.isActual && reportOn.hasActualModifier()

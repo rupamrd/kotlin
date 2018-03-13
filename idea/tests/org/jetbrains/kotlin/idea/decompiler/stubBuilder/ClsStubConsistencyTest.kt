@@ -42,13 +42,9 @@ class ClsStubConsistencyTest : KotlinLightCodeInsightFixtureTestCase() {
         Assert.assertEquals(expectedText, fileStub.serializeToString())
     }
 
-    override fun getProjectDescriptor(): LightProjectDescriptor = KotlinWithJdkAndRuntimeLightProjectDescriptor.INSTANCE_WITH_KOTLIN_JDK8
+    override fun getProjectDescriptor(): LightProjectDescriptor = KotlinWithJdkAndRuntimeLightProjectDescriptor.INSTANCE
 
     fun testConsistency() {
         doTest(ClassId.topLevel(FqName("kotlin.collections.CollectionsKt")))
-    }
-
-    fun testConsistencyJDK8() {
-        doTest(ClassId.topLevel(FqName("kotlin.collections.jdk8.CollectionsJDK8Kt")))
     }
 }

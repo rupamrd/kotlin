@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.idea.test;
 import com.intellij.openapi.projectRoots.Sdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime;
+import org.jetbrains.kotlin.test.KotlinTestUtils;
 import org.jetbrains.kotlin.utils.PathUtil;
 
 import java.io.File;
@@ -36,13 +37,6 @@ public class KotlinWithJdkAndRuntimeLightProjectDescriptor extends KotlinJdkAndL
 
     @NotNull
     public static final KotlinWithJdkAndRuntimeLightProjectDescriptor INSTANCE = new KotlinWithJdkAndRuntimeLightProjectDescriptor();
-
-    public static final KotlinWithJdkAndRuntimeLightProjectDescriptor INSTANCE_WITH_KOTLIN_JDK8 = new KotlinWithJdkAndRuntimeLightProjectDescriptor(
-            Arrays.asList(
-                    ForTestCompileRuntime.assertExists(new File("dist/kotlinc/lib/kotlin-stdlib-jdk8.jar")),
-                    ForTestCompileRuntime.assertExists(new File("dist/kotlinc/lib/kotlin-stdlib.jar"))
-            )
-    );
 
     @NotNull
     public static final KotlinWithJdkAndRuntimeLightProjectDescriptor INSTANCE_WITH_KOTLIN_TEST = new KotlinWithJdkAndRuntimeLightProjectDescriptor(

@@ -1970,12 +1970,12 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
 
         DeclarationDescriptor containingDeclaration = propertyDescriptor.getContainingDeclaration();
 
-        boolean isBackingFieldInClassCompanion = JvmAbi.isPropertyWithBackingFieldInOuterClass(propertyDescriptor);
+        boolean isBackingFieldMovedFromCompanion = JvmAbi.isPropertyWithBackingFieldInOuterClass(propertyDescriptor);
         FieldAccessorKind fieldAccessorKind;
         if (skipLateinitAssertion) {
             fieldAccessorKind = FieldAccessorKind.LATEINIT_INTRINSIC;
         }
-        else if (isBackingFieldInClassCompanion &&
+        else if (isBackingFieldMovedFromCompanion &&
             (forceField || propertyDescriptor.isConst() && Visibilities.isPrivate(propertyDescriptor.getVisibility()))) {
             fieldAccessorKind = FieldAccessorKind.IN_CLASS_COMPANION;
         }
@@ -2034,7 +2034,7 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
         }
         else {
             skipPropertyAccessors = forceField;
-            ownerDescriptor = isBackingFieldInClassCompanion ? containingDeclaration : propertyDescriptor;
+            ownerDescriptor = isBackingFieldMovedFromCompanion ? containingDeclaration : propertyDescriptor;
         }
 
         if (!skipPropertyAccessors) {

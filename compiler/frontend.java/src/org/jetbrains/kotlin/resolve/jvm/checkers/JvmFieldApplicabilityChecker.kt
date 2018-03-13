@@ -16,9 +16,11 @@
 
 package org.jetbrains.kotlin.resolve.jvm.checkers
 
+import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
 import org.jetbrains.kotlin.fileClasses.isInsideJvmMultifileClassFile
+import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -27,6 +29,7 @@ import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import org.jetbrains.kotlin.resolve.jvm.annotations.findJvmFieldAnnotation
+import org.jetbrains.kotlin.resolve.jvm.annotations.hasJvmFieldAnnotation
 import org.jetbrains.kotlin.resolve.jvm.checkers.JvmFieldApplicabilityChecker.Problem.*
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.ErrorsJvm
 
@@ -40,6 +43,7 @@ class JvmFieldApplicabilityChecker : DeclarationChecker {
         LATEINIT("JvmField cannot be applied to lateinit property"),
         CONST("JvmField cannot be applied to const property"),
         INSIDE_COMPANION_OF_INTERFACE("JvmField cannot be applied to a property defined in companion object of interface"),
+        NOT_PUBLIC_VAL_WITH_JVMFIELD_OR_CONST("JvmField could be applied only if all interface companion properties are 'public val' with '@JvmField' annotation or const modifier"),
         TOP_LEVEL_PROPERTY_OF_MULTIFILE_FACADE("JvmField cannot be applied to top level property of a file annotated with ${JvmFileClassUtil.JVM_MULTIFILE_CLASS_SHORT}"),
         DELEGATE("JvmField cannot be applied to delegated property")
     }
@@ -57,7 +61,14 @@ class JvmFieldApplicabilityChecker : DeclarationChecker {
             descriptor.overriddenDescriptors.isNotEmpty() -> OVERRIDES
             descriptor.isLateInit -> LATEINIT
             descriptor.isConst -> CONST
-            descriptor.isInsideCompanionObjectOfInterface() -> INSIDE_COMPANION_OF_INTERFACE
+            descriptor.isInsideCompanionObjectOfInterface() ->
+                if (!context.languageVersionSettings.supportsFeature(LanguageFeature.JvmFieldInInterface))
+                    INSIDE_COMPANION_OF_INTERFACE
+                else {
+                    if (JvmAbi.isInterfaceCompanionWithBackingFieldsInOuter(descriptor.containingDeclaration)) {
+                        NOT_PUBLIC_VAL_WITH_JVMFIELD_OR_CONST
+                    } else return
+                }
             DescriptorUtils.isTopLevelDeclaration(descriptor) && declaration.isInsideJvmMultifileClassFile() ->
                 TOP_LEVEL_PROPERTY_OF_MULTIFILE_FACADE
             else -> return
@@ -79,4 +90,5 @@ class JvmFieldApplicabilityChecker : DeclarationChecker {
         val outerClassKind = (containingClass.containingDeclaration as? ClassDescriptor)?.kind
         return outerClassKind == ClassKind.INTERFACE || outerClassKind == ClassKind.ANNOTATION_CLASS
     }
+
 }

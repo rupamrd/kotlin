@@ -82,7 +82,7 @@ public class ForTestCompileRuntime {
     }
 
     @NotNull
-    private static File assertExists(@NotNull File file) {
+    public static File assertExists(@NotNull File file) {
         if (!file.exists()) {
             throw new IllegalStateException(file + " does not exist. Run 'ant dist'");
         }

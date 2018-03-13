@@ -32,7 +32,7 @@ import org.junit.Assert
 class ClsStubConsistencyTest : KotlinLightCodeInsightFixtureTestCase() {
     private fun doTest(id: ClassId) {
         val packageFile = VirtualFileFinder.SERVICE.getInstance(project).findVirtualFileWithHeader(id)
-                          ?: throw AssertionError("File not found for id: $id")
+                ?: throw AssertionError("File not found for id: $id")
         val decompiledText = buildDecompiledTextForClassFile(packageFile).text
         val fileWithDecompiledText = KtPsiFactory(project).createFile(decompiledText)
         val stubTreeFromDecompiledText = KtFileStubBuilder().buildStubTree(fileWithDecompiledText)
@@ -42,9 +42,13 @@ class ClsStubConsistencyTest : KotlinLightCodeInsightFixtureTestCase() {
         Assert.assertEquals(expectedText, fileStub.serializeToString())
     }
 
-    override fun getProjectDescriptor(): LightProjectDescriptor = KotlinWithJdkAndRuntimeLightProjectDescriptor.INSTANCE
+    override fun getProjectDescriptor(): LightProjectDescriptor = KotlinWithJdkAndRuntimeLightProjectDescriptor.INSTANCE_WITH_KOTLIN_JDK8
 
     fun testConsistency() {
         doTest(ClassId.topLevel(FqName("kotlin.collections.CollectionsKt")))
+    }
+
+    fun testConsistencyJDK8() {
+        doTest(ClassId.topLevel(FqName("kotlin.collections.jdk8.CollectionsJDK8Kt")))
     }
 }
